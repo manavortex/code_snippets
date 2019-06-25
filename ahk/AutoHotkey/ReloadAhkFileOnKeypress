@@ -1,20 +1,37 @@
-#Include %A_ScriptDir%\PleasantNotify.ahk
+
 
 GroupAdd, 				ReloadAhkFileOnKeypress, ahk_class 		Notepad++				
 GroupAdd, 				ReloadAhkFileOnKeypress, ahk_class 		Notepad		
 
-PleasantNotify("Loaded " . A_ScriptName, "" , 330, 80, "b r", "2")
+; Optional: Display a notification when script is reloaded
+; #Include %A_ScriptDir%\PleasantNotify.ahk
+; PleasantNotify("Loaded " . A_ScriptName, "" , 330, 80, "b r", "2")
 
-#IfWinActive, ahk_group ReloadAhkFileOnKeypress 
+#IfWinActive, ahk_group EditAhkFile 
 ; ------------------------------------------------------------------------------------------
-ReloadThis() 
-{	
-	Reload
-	Sleep 1000 ; If successful, the reload will close this instance during the Sleep, so the line below will never be reached.
-	MsgBox, 4,, The script could not be reloaded. Would you like to open it for editing?
-	IfMsgBox, Yes, Edit
-	return	
-}
 	^!r::ReloadThis()
 	^+r::ReloadThis()
 #IfWinActive
+
+; reloads the file containing the snippet above. Will offer to edit script on error if you're not currently editing it.
+ReloadThis() 
+{		
+	Reload
+	WinGetActiveTitle, activeTitle
+	if (InStr(activeTitle, A_ScriptName)) 
+		return
+	
+	Sleep 1000 ; If successful, the reload will close this instance during the Sleep, so the line below will never be reached.
+	MsgBox, 4,, The script could not be reloaded. Would you like to open it for editing?
+	IfMsgBox, Yes, Edit
+	
+}
+
+; requires _both_ #SingleInstance force to be set and *.ahk files to be auto-opened with AutoHotkey
+; hardcode ahkPath to whatever file you want to reload
+ReloadFromCmd()
+{
+	ahkPath = %A_ScriptDir%\%A_ScriptName%
+	ahkPath := StrReplace(ahkPath, " ", "^ ")	
+	run, %comspec% /k %ahkPath%
+}
