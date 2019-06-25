@@ -1,2 +1,2 @@
 # code_snippets
-a repository with code snippets
+contains a bunch of code snippets that I cobbled up at one point. Sorted by language.
