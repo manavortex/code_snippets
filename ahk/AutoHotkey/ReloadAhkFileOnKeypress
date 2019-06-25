@@ -1,0 +1,20 @@
+#Include %A_ScriptDir%\PleasantNotify.ahk
+
+GroupAdd, 				ReloadAhkFileOnKeypress, ahk_class 		Notepad++				
+GroupAdd, 				ReloadAhkFileOnKeypress, ahk_class 		Notepad		
+
+PleasantNotify("Loaded " . A_ScriptName, "" , 330, 80, "b r", "2")
+
+#IfWinActive, ahk_group ReloadAhkFileOnKeypress 
+; ------------------------------------------------------------------------------------------
+ReloadThis() 
+{	
+	Reload
+	Sleep 1000 ; If successful, the reload will close this instance during the Sleep, so the line below will never be reached.
+	MsgBox, 4,, The script could not be reloaded. Would you like to open it for editing?
+	IfMsgBox, Yes, Edit
+	return	
+}
+	^!r::ReloadThis()
+	^+r::ReloadThis()
+#IfWinActive
