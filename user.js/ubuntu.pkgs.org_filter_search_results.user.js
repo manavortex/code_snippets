@@ -9,9 +9,9 @@
 // @grant        none
 // ==/UserScript==
 
-const your_distro = "distro-ubuntu"
-const your_version = "16.04"
-const your_architecture = "amd64"
+var your_distro = "distro-ubuntu";
+var your_version = "16.04";
+var your_architecture = "amd64";
 
 
 (function() {
