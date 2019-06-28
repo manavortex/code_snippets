@@ -5,27 +5,55 @@
 // @description  try to take over the world!
 // @author       You
 // @match        https://ubuntu.pkgs.org/*.deb.html
-// @grant    GM_setClipboard
+// @grant        GM_setClipboard
 // ==/UserScript==
 
+
+// note: GM_setClipboard breaks window.jQuery, so do without
 
 (function() {
     'use strict';
     setTimeout(function() {
 
-        var loc = window.location.toString();
-        var filename = loc.substring(loc.lastIndexOf("/")+1).replace(".html", "");
-        var link = document.querySelector('a[href*="' + filename + '"]');
-        var header = link.closest("table").previousElementSibling;
+        var link = getLinkFromTable(findDownloadTable());
+        if (!link) { return;}
+        window.scrollTo({ top: link.closest("table").previousElementSibling.offsetTop, left: 0, behavior: "smooth" });
 
-        window.scrollTo({ top: header.offsetTop, left: 0, behavior: "smooth" });
+        var filename = link.href.substring(link.href.lastIndexOf("/")+1);
         GM_setClipboard(filename);
         SaveToDisk(link, filename);
     }, 200);
+
+    window.addEventListener("focus", function(event) { document.getElementById("searchform-query").focus(); }, false);
 })();
 
+function getLinkFromTable(table) {
+    if (!table) { return null;}
+    var links = table.getElementsByTagName("a");
+    if (links.length == 1) { return links[0]; }
 
-// credit goes to https://stackoverflow.com/questions/35453249/how-to-download-file-using-javascript-with-proper-readable-content
+    var i, link;
+    for (i=0; i < links.length; i++) {
+        link = links[i];
+        if (link.closest("tr").innerHTML.indexOf("pdate") < 0 && link.href.indexOf(".deb") == link.href.length -4) {
+            return link;
+        }
+    }
+    return null;
+}
+function findDownloadTable() {
+    var tables = document.querySelectorAll("#view_packages_info table");
+    var table, sib, i;
+    for (i = 0; i < tables.length; i++) {
+        table = tables[i];
+        sib = table.previousElementSibling;
+        if ("H2" != sib.tagName || sib.innerHTML.indexOf("Download") < 0) { continue; }
+        return table;
+    }
+    return null;
+}
+
+
 function SaveToDisk(fileURL, fileName) {
     // for non-IE
     if (!window.ActiveXObject) {
