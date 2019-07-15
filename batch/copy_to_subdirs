@@ -1,0 +1,16 @@
+@echo off
+set filepath=
+SET mypath=%~dp0
+SET param=%1
+
+REM to quickly populate several directories from current dirs
+
+for /f "tokens=*" %%i ^
+in ('forfiles /M %param% /P "%USERPROFILE%\Applications" /c "cmd /c if @isdir==TRUE echo @path"') ^
+do call :subroutine %%i
+goto :eof
+
+:subroutine  
+  set filepath=%~1
+  FOR /D %%G in ("%mypath%*") do xcopy %%G\* %filepath%\%%~nxG /E /Y
+  goto :eof
