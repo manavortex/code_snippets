@@ -21,9 +21,21 @@ on getPrevious(layerName)
 	
 end getPrevious
 
+on getPrevLayer(targetLayerName, currentLayer)
+	log "getPrevLayer"
+	set currentLayerId to id of currentLayer
+	tell application "Adobe Photoshop CC 2018"
+		return the first art layer of the current document whose name is targetLayerName and id is not currentLayerId
+		return the first art layer of the current document whose name is targetLayerName
+	end tell
+	
+end getPrevLayer
+
 set allLayerNames to {}
 tell application "Adobe Photoshop CC 2018"
-	set layerName to name of current layer of current document
+	
+	set currentLayer to current layer of current document
+	set layerName to name of currentLayer
 	set targetLayerName to layerName
 	
 	set allLayers to the layers of current document
@@ -38,14 +50,15 @@ tell application "Adobe Photoshop CC 2018"
 		if targetLayerName is equal to layerName then return end
 		if allLayerNames contains targetLayerName then set existingLayer to targetLayerName
 	end repeat
-	if "" is equal to existingLayer then return
+	if "" is equal to existingLayer then set targetLayerName to layerName
 	
 	--	return layerName & "->" & existingLayer 	
+	set targetlayer to my getPrevLayer(targetLayerName, currentLayer)
 	
-	set visible of layer layerName of current document to false
-	set visible of layer existingLayer of current document to true
+	set visible of currentLayer to false
+	set visible of targetlayer to true
 	delay 1
-	set visible of layer existingLayer of current document to false
-	set visible of layer layerName of current document to true
+	set visible of targetlayer to false
+	set visible of currentLayer to true
 	
 end tell
