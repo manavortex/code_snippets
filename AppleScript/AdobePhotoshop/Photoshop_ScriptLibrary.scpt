@@ -1,6 +1,7 @@
+use varStorage : script "GlobalVarLibrary"
 -- put into ~/Library/Script\ Libraries
 -- use as set currentTool to script "Photoshop_ScriptLibrary"'s toggleCurrentTool("lassoTool", "eraserTool")
-use varStorage : script "GlobalVarLibrary"
+
 
 on getCurrentTool()
 	tell application "Adobe Photoshop CC 2018" to return current tool
@@ -13,7 +14,7 @@ end deselect
 
 on toggleCurrentTool(tool1, tool2)
 	setFeathered(false)
-	currentTool = tool1
+	set currentTool to tool1
 	tell application "Adobe Photoshop CC 2018"
 		if current tool is equal to currentTool then set currentTool to tool2
 		set current tool to currentTool
