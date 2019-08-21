@@ -66,6 +66,11 @@ on getPrevious(layerName)
 	
 end getPrevious
 
+
+on getPreviousLayer(currentLayer)	
+	return getPrevLayer((getPrevious(name of currentLayer)), currentLayer)	
+end getPreviousLayer
+
 on getFeathered()
 	return "true" is equal to varStorage's readVar("feathered")
 end getFeathered
@@ -75,6 +80,7 @@ on setFeathered(b)
 end setFeathered
 
 on tryFeather()
+	if getFeathered() then return
 	try
 		tell application "Adobe Photoshop CC 2018" to tell current document to feather selection by 5
 		setFeathered(true)
@@ -86,6 +92,11 @@ end tryFeather
 
 on tryBlur(_radius)
 	try
-		tell application "Adobe Photoshop CC 2018" to tell current document to filter current layer using gaussian blur with options {radius:_radius}
+		
+		tell application "Adobe Photoshop CC 2018" to tell current document
+			set props to properties of selection
+			if bounds of props is equal to missing value then return end
+			filter current layer using gaussian blur with options {radius:_radius}
+		end tell
 	end try
 end tryBlur
