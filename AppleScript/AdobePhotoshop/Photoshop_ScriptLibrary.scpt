@@ -1,7 +1,15 @@
 -- put into ~/Library/Script\ Libraries
 -- use as set currentTool to script "Photoshop_ScriptLibrary"'s toggleCurrentTool("lassoTool", "eraserTool")
+use varStorage : script "GlobalVarLibrary"
 
-global feathered
+on getCurrentTool()
+	tell application "Adobe Photoshop CC 2018" to return current tool
+end getCurrentTool
+
+on deselect()
+	tell application "Adobe Photoshop CC 2018" to tell the current document to deselect
+	setFeathered(false)
+end deselect
 
 on toggleCurrentTool(tool1, tool2)
 	setFeathered(false)
@@ -58,16 +66,11 @@ on getPrevious(layerName)
 end getPrevious
 
 on getFeathered()
-	try
-		get feathered
-	on error
-		set feathered to false
-	end try
-	return feathered
+	return "true" is equal to varStorage's readVar("feathered")
 end getFeathered
 
 on setFeathered(b)
-	set feathered to b
+	varStorage's writeVar("feathered", b)
 end setFeathered
 
 on tryFeather()
