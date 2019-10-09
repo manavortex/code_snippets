@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name         Github: Auto-login
+// @name         AutoLogin: Github
 // @namespace    https://github.com/
 // @version      0.1
 // @author       manavortex
@@ -15,7 +15,6 @@ var $ = window.jQuery;
         var error = document.querySelector('.flash flash-full.flash-error');
         if (null !== passwordField && passwordField.textLength > 0 && null === error ) {
             document.querySelector("input[type='submit']").click();
-            return;
         }
     }, 1000);
 })();
