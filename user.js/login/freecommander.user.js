@@ -1,8 +1,6 @@
 // ==UserScript==
 // @name         AutoLogin: FreeCommander
-// @namespace    https://freecommander.com/
 // @version      0.1
-// @description  FreeCommander
 // @author       manavortex
 // @match        https://freecommander.com/donors/*
 // @grant        none
@@ -23,7 +21,8 @@ var $ = window.jQuery;
             linkToDownloads.click();
             return;
         }
-        var downloadLink = $('a:contains("FreeCommanderXE-64-donor_setup")');
+        var downloadLink = $('a:contains("FreeCommanderXE-64-donor_portable")');
+        //var downloadLink = $('a:contains("FreeCommanderXE-64-donor_setup")');
         if (null !== downloadLink && downloadLink.length > 0) {
             downloadLink[0].click();
         }
