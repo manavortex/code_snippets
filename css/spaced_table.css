@@ -1,0 +1,23 @@
+.spacing-table {
+  font-family: 'Helvetica', 'Arial', sans-serif;
+  font-size: 15px;
+  border-collapse: separate;
+  border-spacing: 0 5px; /* this is the ultimate fix */
+}
+.spacing-table th {
+  text-align: left;
+  padding: 5px 15px;
+}
+.spacing-table td {
+  border-width: 1px 0;
+  border-bottom: 1px solid $mediumgray;
+  padding: 5px 15px;
+}
+.spacing-table td:first-child {
+  border-left-width: 3px;
+  border-radius: 5px 0 0 5px;
+}
+.spacing-table td:last-child {
+  border-right-width: 3px;
+  border-radius: 0 5px 5px 0;
+}
