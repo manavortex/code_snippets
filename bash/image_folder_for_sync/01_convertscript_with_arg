@@ -1,0 +1,25 @@
+#!/bin/bash
+
+PATH=$PATH:/usr/local/bin
+TARGETPATH="$HOME/Pictures/99_icons"
+
+if [ -f $1 ] ; then
+  
+	pushd $TARGETPATH
+
+	filename="$1"
+	fbname=$(basename "$1" .png)	# remove path and extension from file
+
+	\cp "$fbname.png" $TARGETPATH/1_pngs/$pngname
+
+	sips -s format icns "$fbname.png" --out $fbname.icns
+	ffmpeg  -hide_banner -loglevel panic -i "$fbname.png" $fbname.ico
+
+	[ -z "$fbname.ico" ] || mv $fbname.ico $TARGETPATH/2_ico/$fbname.ico 
+	[ -z "$fbname.png" ] || rm "$fbname.png"
+
+	popd
+	
+else
+	echo "$1 does not exist"
+fi
