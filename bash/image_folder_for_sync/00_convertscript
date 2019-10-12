@@ -1,0 +1,26 @@
+#!/bin/bash
+pushd "$HOME/Pictures/99_icons"
+
+for i in *.png ; do ./01_convertscript_with_arg $i; done
+
+
+#
+#
+#
+#
+# try to auto-mount folder and copy shit there
+#
+#
+#
+#
+
+if  smbutil lookup TELETRAAN  ; then
+	
+	mount | grep "02_ico" > /dev/null || osascript -e 'mount volume "smb://remote:wasd@TELETRAAN/02_ico"'
+	
+	if mount | grep "02_ico" > /dev/null ; then 
+		rsync -avz ./2_ico/* /Volumes/02_ico
+	fi
+fi
+
+popd
