@@ -6,31 +6,28 @@ import sublime_plugin
 #{ "keys": ["super+shift+r"], "command": "remove_lines_by_partial" },
 #{ "keys": ["super+shift+ctrl+r"], "command": "remove_lines_without_partial" },
 
-class RemoveLinesByPartialCommand(sublime_plugin.TextCommand):
+class ReplaceLinesCommand(sublime_plugin.TextCommand):
+  # Check all links in view
+  def check_lines(self, edit, regex_arg):
 
-  pluginText = "remove lines containing "
+    
+    v = self.view
 
-  def on_done(self, user_input):
-    sublime.status_message(self.pluginText + user_input)
-    regex = "(.*({}).*)($[\r\n])?".format(user_input)
-    for line in self.view.find_all(regex, 0):
-      self.view.replace(self.edit, line, "")
+    # Find all lines in view
+    regions = [s for s in v.sel() if not s.empty()]
 
-  def run(self, edit):
-    self.edit = edit
-    self.view.window().show_input_panel(self.pluginText, '', self.on_done, None, None)
+  	# if there's no non-empty selection, filter the whole document
+    if len(regions) == 0:
+    	regions = [ sublime.Region(0, v.size()) ]
 
+    for region in reversed(regions):
+      lines = v.split_by_newlines(region)
 
-class RemoveLinesWithoutPartialCommand(sublime_plugin.TextCommand):
-  pluginText = "remove lines _NOT_ containing "
+      for line in reversed(lines):
+        if regex_arg in v.substr(line):
+          v.erase(edit, v.full_line(line))
 
-  def on_done(self, user_input):
-    sublime.status_message(self.pluginText + user_input)
-    regex = "^((?!|{}).)*$".format(user_input)
-    for line in self.view.find_all(regex, 0):
-      sublime.status_message(self.pluginText + user_input)
-      self.view.replace(self.edit, line, "")
-
-  def run(self, edit):
-    self.edit = edit
-    self.view.window().show_input_panel(self.pluginText, '', self.on_done, None, None)
+  def run(self, edit, regex_arg):
+    if self.view.is_read_only() or self.view.size () == 0:
+      return
+    self.check_lines (edit, regex_arg)
