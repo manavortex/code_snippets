@@ -26,7 +26,7 @@ goto:eof
   set targetdir="%USERPROFLE%\Downloads\%filename%"
   echo "%PROGRAMFILES%\7-zip\7z.exe" x -y "%1"
   "%PROGRAMFILES%\7-zip\7z.exe" x -y %1
-   
+  del /F /Q %1
   goto :eof
 
 
