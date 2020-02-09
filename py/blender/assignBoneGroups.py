@@ -1,5 +1,3 @@
-#utility script to distribute bones into bone groups and onto bone layers for dragon age inquisition models
-
 
 import bpy 
 
@@ -56,13 +54,13 @@ class GetBoneGroup:
         return ', '.join([str(elem) for elem in l])
         
 
-print(bpy.context.active_object)
+# print(bpy.context.active_object)
  
-print("\n\n")
-print(poseBones)
-print("\n")
-print(editBones)
-print("\n\n") 
+# print("\n\n")
+# print(poseBones)
+# print("\n")
+# print(editBones)
+# print("\n\n") 
 
 namesAndBones = {}
 noneMatches = []
@@ -84,7 +82,7 @@ for grpName in grps_and_partials:
                 bone.layers = [False]*32
                 bone.layers[layerNo-1] = True
                 poseBones[bone.name].bone_group = boneGroup
-            elif not bone.name in noneMatches:                 
+            else:
                 noneMatches.append(bone.name)
 
 
