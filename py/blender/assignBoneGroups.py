@@ -81,6 +81,7 @@ for grpName in grps_and_partials:
                 namesAndBones[grpName].append(bone.name)
                 bone.layers = [False]*32
                 bone.layers[layerNo-1] = True
+                bone.layers[0] = 0 == layerNo-1
                 poseBones[bone.name].bone_group = boneGroup
             else:
                 noneMatches.append(bone.name)
