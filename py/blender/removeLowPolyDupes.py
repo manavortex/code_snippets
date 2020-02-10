@@ -36,5 +36,8 @@ root_obs = (o for o in scene.objects if not o.parent)
 
 
 for o in root_obs:
+    print(o.type)
     if "Skeleton" in o.name: 
         clean_objects(o)
+    if "EMPTY" == o.type and len(o.children) == 0:
+        delete_object(o.name)
