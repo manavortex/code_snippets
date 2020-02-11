@@ -1,5 +1,7 @@
 import bpy
 
+# based on https://blender.stackexchange.com/a/40246
+
 copyFrom = "Left"
 copyTo = "Right"
 
