@@ -9,19 +9,15 @@ pBones = [ b for b in bpy.context.object.pose.bones if copyFrom in b.name and 0 
 
 for b in pBones:
     otherBone = bpy.context.object.pose.bones[  b.name.replace( copyFrom, copyTo ) ]
-    print("")
-    print( b.name +  " -> " + str(otherBone))
     for c in b.constraints:         
-        print("")
+
         nc = otherBone.constraints.new( c.type ) 
         for prop in dir( c ):   
             # This is fairly ugly and dirty, but quick and does the trick...
             try:
                 constrProp = getattr( c, prop )
-                print(str(prop) + " -> " + str(constrProp))
-                if type( constrProp ) == type(str()) and ("Left" in constrProp or "Right" in constrProp):
-                    oppositeVal = constrProp.replace("Left", "Right") if "Left" in constrProp else constrProp.replace("Right", "Left")                     
-                    print(" -> " + str(constrProp) + " -> " + str(oppositeVal))
+                if type( constrProp ) == type(str()) and (copyFrom in constrProp or copyTo in constrProp):
+                    oppositeVal = constrProp.replace(copyFrom, copyTo) if copyFrom in constrProp else constrProp.replace(copyTo, copyFrom)                     
                     setattr( nc, prop, oppositeVal ) 
                 elif 'max_' in prop:
                     setattr( nc, prop, getattr( c, prop.replace( 'max', 'min' ) ) )
