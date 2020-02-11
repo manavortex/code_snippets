@@ -3,25 +3,24 @@ import bpy
 copyFrom = "Left"
 copyTo = "Right"
 
-pBones = [ b for b in bpy.context.object.pose.bones if copyFrom in b.name ]
-print(pBones)
+pBones = [ b for b in bpy.context.object.pose.bones if copyFrom in b.name and 0 < len(b.constraints) ]
+
 for b in pBones:
-    for c in b.constraints:
-        
-        otherBone = bpy.context.object.pose.bones[ 
-            b.name.replace( copyFrom, copyTo ) 
-        ]
-
-        nc = otherBone.constraints.new( c.type )
-
-        for prop in dir( c ):
+    otherBone = bpy.context.object.pose.bones[  b.name.replace( copyFrom, copyTo ) ]
+    print("")
+    print( b.name +  " -> " + str(otherBone))
+    for c in b.constraints:         
+        print("")
+        nc = otherBone.constraints.new( c.type ) 
+        for prop in dir( c ):   
             # This is fairly ugly and dirty, but quick and does the trick...
             try:
                 constrProp = getattr( c, prop )
-                if type( constrProp ) == type(str()) and (copyFrom in constrProp or copyTo in constProp)
-                    # Replace string property values from L to R and vice versa
-                    oppositeVal = constrProp.replace(copyFrom, copyTo) if copyFrom in constrProp else constrProp.replace(copyTo, copyFrom)
-                    setattr( nc, prop, oppositeVal )
+                print(str(prop) + " -> " + str(constrProp))
+                if type( constrProp ) == type(str()) and ("Left" in constrProp or "Right" in constrProp):
+                    oppositeVal = constrProp.replace("Left", "Right") if "Left" in constrProp else constrProp.replace("Right", "Left")                     
+                    print(" -> " + str(constrProp) + " -> " + str(oppositeVal))
+                    setattr( nc, prop, oppositeVal ) 
                 elif 'max_' in prop:
                     setattr( nc, prop, getattr( c, prop.replace( 'max', 'min' ) ) )
                 elif 'min_' in prop:
