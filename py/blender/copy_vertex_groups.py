@@ -1,3 +1,5 @@
+import bpy
+
 source = bpy.data.objects['OLD']
 target = bpy.data.objects['NEW']
 for group in source.vertex_groups:
