@@ -1,33 +1,86 @@
-use varStorage : script "GlobalVarLibrary"
+
 -- put into ~/Library/Script\ Libraries
 -- use as set currentTool to script "Photoshop_ScriptLibrary"'s toggleCurrentTool("lassoTool", "eraserTool")
 
 
+on writeVar(theName, theVar)
+	do shell script "echo " & theVar & " > /tmp/" & theName & ".txt"
+end writeVar
+on readVar(theName)
+	try
+		return do shell script "cat /tmp/" & theName & ".txt"
+	end try
+	return ""
+end readVar
+
+on getLastTool()
+	return readVar("_lastTool")
+end getLastTool
+
+on setLastTool(arg)
+	writeVar("_lastTool", arg)
+end setLastTool
+
+
+on getGroupPath()
+	set thelayer to ""
+	tell application "Adobe Photoshop 2020" to tell the current document
+		set thelayer to current layer
+	end tell
+	return thelayer
+end getGroupPath
+
 on getCurrentTool()
-	tell application "Adobe Photoshop CC 2018" to return current tool
+	tell application "Adobe Photoshop 2020" to return current tool
 end getCurrentTool
 
+
+on getCurrentLayerName()
+	tell application "Adobe Photoshop 2020" to tell the current document to return the name of current layer
+end getCurrentLayerName
+
+
 on deselect()
-	tell application "Adobe Photoshop CC 2018" to tell the current document to deselect
+	tell application "Adobe Photoshop 2020" to tell the current document to deselect
 	setFeathered(false)
 end deselect
 
+
+on cut()
+	try
+		tell application "Adobe Photoshop 2020" to tell the current document to cut
+		setFeathered(false)
+	end try
+end cut
+
 on toggleCurrentTool(tool1, tool2)
 	setFeathered(false)
-	set currentTool to tool1
-	tell application "Adobe Photoshop CC 2018"
-		if current tool is equal to currentTool then set currentTool to tool2
+	set currentTool to getCurrentTool()
+	setLastTool(currentTool)
+	tell application "Adobe Photoshop 2020"
+		if currentTool is equal to tool1 then
+			set currentTool to tool2
+		else
+			set currentTool to tool1
+		end if
 		set current tool to currentTool
 	end tell
 	return currentTool
 end toggleCurrentTool
 
+on selectLastTool()
+	set currentTool to getCurrentTool()
+	set lastTool to getLastTool()
+	if currentTool is equal to lastTool then return
+	toggleCurrentTool(lastTool, currentTool)
+end selectLastTool
+
 on getAllLayers(layerName)
 	set allLayerNames to {}
-	tell application "Adobe Photoshop CC 2018"
+	tell application "Adobe Photoshop 2020"
 		set allLayers to the layers of current document
-		repeat with theLayer in allLayers
-			set theName to the name of theLayer
+		repeat with thelayer in allLayers
+			set theName to the name of thelayer
 			if theName starts with the first word of layerName then set end of allLayerNames to theName
 		end repeat
 	end tell
@@ -37,7 +90,7 @@ end getAllLayers
 
 on getPrevLayer(targetLayerName, currentLayer)
 	set currentLayerId to id of currentLayer
-	tell application "Adobe Photoshop CC 2018"
+	tell application "Adobe Photoshop 2020"
 		return the first art layer of the current document whose name is targetLayerName and id is not currentLayerId
 		return the first art layer of the current document whose name is targetLayerName
 	end tell
@@ -66,23 +119,46 @@ on getPrevious(layerName)
 	
 end getPrevious
 
-
-on getPreviousLayer(currentLayer)	
-	return getPrevLayer((getPrevious(name of currentLayer)), currentLayer)	
+on getPreviousLayer(currentLayer)
+	return getPrevLayer((getPrevious(name of currentLayer)), currentLayer)
 end getPreviousLayer
 
 on getFeathered()
-	return "true" is equal to varStorage's readVar("feathered")
+	return "true" is equal to readVar("feathered")
 end getFeathered
 
 on setFeathered(b)
-	varStorage's writeVar("feathered", b)
+	writeVar("feathered", b)
 end setFeathered
 
-on tryFeather()
-	if getFeathered() then return
+on isOnLayerMask()
 	try
-		tell application "Adobe Photoshop CC 2018" to tell current document to feather selection by 5
+		set windowName to ""
+		tell application "System Events" to tell process "Adobe Photoshop CC 2019"
+			tell (1st window whose value of attribute "AXMain" is true)
+				set windowName to value of attribute "AXTitle"
+			end tell
+		end tell
+	end try
+	return windowName contains "Layer Mask"
+end isOnLayerMask
+
+on isSelected()
+	try
+		tell application "Adobe Photoshop 2020" to tell current document
+			set props to properties of selection
+			if bounds of props is not equal to missing value then return true
+		end tell
+	end try
+	return false
+end isSelected
+
+on tryFeather()
+	if getFeathered() or not isSelected() then return
+	try
+		tell application "Adobe Photoshop 2020" to tell current document
+			feather selection by 5
+		end tell
 		setFeathered(true)
 	on error
 		setFeathered(false)
@@ -91,12 +167,12 @@ end tryFeather
 
 
 on tryBlur(_radius)
-	try
-		
-		tell application "Adobe Photoshop CC 2018" to tell current document
-			set props to properties of selection
-			if bounds of props is equal to missing value then return end
-			filter current layer using gaussian blur with options {radius:_radius}
-		end tell
-	end try
+	
+	if isSelected() then
+		try
+			tell application "Adobe Photoshop 2020" to tell current document
+				filter current layer using gaussian blur with options {radius:_radius}
+			end tell
+		end try
+	end if
 end tryBlur
