@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         FreeCommander
-// @version      0.1
-// @description  try to take over the world!
+// @version      1
+// @description  automatically login and download latest freecommander version
 // @author       You
 // @match        https://freecommander.com/donors/*
 // @grant        none
