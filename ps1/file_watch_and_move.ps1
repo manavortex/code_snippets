@@ -36,15 +36,15 @@ Function includeFile($filepath) {
 	
 
 ### DECIDE WHICH EVENTS SHOULD BE WATCHED 
-   Register-ObjectEvent $watcher "Created" -Action $action    
-    
+       
     foreach ($file in GCI "$sourcePath") {
         if (includeFile($file)) {
             $name = $file.Name
 		    $filelist += "$name"
         }
     }
-    
+   
+	Register-ObjectEvent $watcher "Created" -Action $action 
     while ($true) {
 		sleep 5
         $movedFiles =  @()
@@ -52,14 +52,13 @@ Function includeFile($filepath) {
             $path = "$sourcePath\$name"
 			$diff=((ls $path).LastWriteTime - (Get-Date)).TotalSeconds
             
-			Add-content "$logfile" -value $logline
 			if ($diff -lt 1.0) { 
                 $movedFiles += $name
 				$logline = "moving $path to $destpath\$name"
-                Write-Output $logline
+				Add-content "$logfile" -value $logline
 				Move-Item -Path "$path" -Destination "$destpath"				
 			}	
         }
-
+		
         $filelist | Where-Object { $movedFiles -notcontains $_ }
 	}
