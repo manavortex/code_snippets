@@ -21,7 +21,7 @@ on setLastTool(arg)
 	writeVar("_lastTool", arg)
 end setLastTool
 
-
+-- WIP
 on getGroupPath()
 	set thelayer to ""
 	tell application "Adobe Photoshop 2020" to tell the current document
@@ -39,6 +39,21 @@ on getCurrentLayerName()
 	tell application "Adobe Photoshop 2020" to tell the current document to return the name of current layer
 end getCurrentLayerName
 
+on setLayerVisibility(theName, theVisibility)
+	try
+		tell application "Adobe Photoshop 2020" to tell the current document
+			set visible of the layer theName to theVisibility
+		end tell
+	end try
+end setLayerVisibility
+
+-- toggles layer visibility. If hidden, show - if visible, hide
+on toggleLayerVisibility(theName)
+	tell application "Adobe Photoshop 2020" to tell the current document
+		set theVisibility to visible of layer theName
+	end tell
+	setLayerVisibility(theName, not (theVisibility))
+end toggleLayerVisibility
 
 on deselect()
 	tell application "Adobe Photoshop 2020" to tell the current document to deselect
@@ -153,8 +168,8 @@ on isSelected()
 	return false
 end isSelected
 
-on tryFeather()
-	if getFeathered() or not isSelected() then return
+on tryFeather(forceOverride)
+	if (getFeathered() and not forceOverride) or not isSelected() then return
 	try
 		tell application "Adobe Photoshop 2020" to tell current document
 			feather selection by 5
@@ -167,12 +182,10 @@ end tryFeather
 
 
 on tryBlur(_radius)
-	
-	if isSelected() then
-		try
-			tell application "Adobe Photoshop 2020" to tell current document
-				filter current layer using gaussian blur with options {radius:_radius}
-			end tell
-		end try
-	end if
+	if not isSelected() then return end
+	try
+		tell application "Adobe Photoshop 2020" to tell current document
+			filter current layer using gaussian blur with options {radius:_radius}
+		end tell
+	end try
 end tryBlur
