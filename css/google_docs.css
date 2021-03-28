@@ -1,0 +1,17 @@
+
+.kix-commentoverlayrenderer-normal {
+    background-color: rgb(81, 63, 10);
+}
+.kix-commentoverlayrenderer-highlighted {
+    background-color: rgb(98, 75, 9);
+}
+
+.kix-commentoverlayrenderer-highlighted ~ .kix-lineview-content .kix-lineview-text-block, 
+.kix-commentoverlayrenderer-normal ~ .kix-lineview-content .kix-lineview-text-block {
+    text-decoration-line: underline !important;
+    text-decoration-color: rgb(154, 118, 14) !important;
+}
+
+.kix-lineview-decorations * {
+  border-color: silver !important;
+}
