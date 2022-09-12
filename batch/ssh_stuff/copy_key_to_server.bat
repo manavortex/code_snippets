@@ -1,6 +1,7 @@
 @echo off
+setlocal EnableDelayedExpansion
 REM =========================================================================================================
-set KEY_NAME="id_rsa_twms_controller"
+set KEY_NAME=id_rsa_twms_controller
 set KEYFILE="%USERPROFILE%\.ssh\%KEY_NAME%.pub"
 set CONFIGFILE="%USERPROFILE%\.ssh\config"
 set KNOWN_HOSTS="%USERPROFILE%\.ssh\known_hosts"
@@ -22,8 +23,10 @@ if "" == "%KEY%" (
 )
 
 pushd %~dp0
-set script_dir="%CD%"
+set BATCH_DIR=%CD%
 popd
+
+set pingTimeoutRemoteIPs=
 
 if "%~1"=="" (
   call :copy_file
@@ -39,14 +42,13 @@ for /F "tokens=*" %%A in (%TEMP%\copy_keys.txt) do (
   call :processIP %%A
 )
 
-goto :eof
+goto :end
 
-:copy_file
-  IF EXIST (%script_dir%\allIps.txt) (
-    xcopy /Y "%script_dir%\allIps.txt" "%TEMP%\copy_keys.txt" > nul
-  ) else (
+:copy_file    
+  (echo F | xcopy /Y "%BATCH_DIR%\allIps.txt" "%TEMP%\copy_keys.txt") > nul
+  if not %errorlevel% == 0 ( 
     call :echoRed Please either call the script with IP addresses as parameters, or create the following file with one IP per line:
-    call :echoRed %script_dir%\allIps.txt
+    call :echoRed %BATCH_DIR%\allIps.txt
   )
   goto :eof
 
@@ -56,26 +58,25 @@ goto :eof
   if /i "%IP:~0,1%"=="#" goto :eof
   
   ping -w 1000 -n 1 %IP% | find /I "Lost = 0" > nul
+  REM not responding to ping
   if not %errorlevel% == 0 (
-    call :echoYellow %IP% not responding to ping. Skipping...
+    set pingTimeoutRemoteIPs=%pingTimeoutRemoteIPs% %IP%
     goto :eof
   )
 
   REM hostname will be the last two bits of the IP
-  set HOSTNAME=%IP:172.21=%
+  set HOSTNAME=%IP:192.168.=%
   
   echo Copying key to %IP% (writing host %HOSTNAME%).
   
   REM delete key from known-hosts file
-  call :deleteKnownHost
+  call :rewriteKnownHost
   
   REM make sure that we can establish a connection. Then, check if key is already authorized, or add it to authorized keys.
   echo y | plink -ssh -pw %REMOTE_PASSWORD% root@%IP% "grep -q '%KEY%' ~/.ssh/authorized_keys && (echo 'already authorized'; exit 2) || (echo %KEY% >> ~/.ssh/authorized_keys; exit 0)"
   
   REM add it to config file if it hasn't been added
-  find "%IP%" %CONFIGFILE% > nul || (
-    echo Adding %IP% to %CONFIGFILE% as %HOSTNAME%...
-    
+  find "%IP%" %CONFIGFILE% > nul || (    
     echo. >> %CONFIGFILE%
     echo Host %HOSTNAME%>> %CONFIGFILE%
     echo    HostName %IP% >> %CONFIGFILE%
@@ -89,13 +90,14 @@ goto :eof
   
   goto :eof
 
-:deleteKnownHost
+:rewriteKnownHost
   if "" == "%KNOWN_HOSTS%" goto :eof
+  if not exist "%KNOWN_HOSTS%" goto :eof
   findstr /V "%IP%" "%KNOWN_HOSTS%" > "%TEMP%\known_hosts"
   xcopy /Y "%TEMP%\known_hosts" "%KNOWN_HOSTS%" > nul
   del "%TEMP%\known_hosts"
+  REM ssh-keyscan -H %IP% >> %KNOWN_HOSTS%
   goto :eof
-
 
 :echoRed
   %Windir%\System32\WindowsPowerShell\v1.0\Powershell.exe write-host -foregroundcolor Red %*
@@ -108,6 +110,18 @@ goto :eof
 :echoGreen
   %Windir%\System32\WindowsPowerShell\v1.0\Powershell.exe write-host -foregroundcolor Green %*
   goto :eof
+  
+:end
+  IF EXIST ("%TEMP%\copy_keys.txt") (
+    rm "%TEMP%\copy_keys.txt"
+  )  
+  if not "%pingTimeoutRemoteIPs%" == "" (  
+    call :echoYellow Failed to reach the following IPs
+    for %%x in (%pingTimeoutRemoteIPs%) do (
+      echo.   %%x
+    )
+  )
+  
 
 exit /b 0
 
