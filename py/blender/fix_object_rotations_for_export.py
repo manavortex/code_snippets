@@ -39,13 +39,18 @@ for armature in filter(lambda obj: obj.type == 'ARMATURE', bpy.data.objects):
 for mesh in filter(lambda obj: obj.type == 'MESH' and re.match("^submesh_0|^submesh", obj.name), bpy.data.objects):
     if (ignoreHiddenObjects and not mesh.is_visible):
         continue;
-    meshNumberMatch = re.sub('^submesh_0|^submesh', '', mesh.name)
-    meshNumberMatch = re.sub('(?<=\d)_.+$', '', meshNumberMatch)
-    print(meshNumberMatch)
-    if (isNoesisExport):
-        mesh.name = "submesh{}".format(meshNumberMatch)
-    else:
-        mesh.name = "submesh_{}_LOD_1".format(meshNumberMatch.zfill(2)) # prefix with leading zero
+    
+    
+    # rename them as expected by import algo
+    try:         
+        meshNumberMatch = re.search('[0-9]+', mesh.name).group()
+        print(meshNumberMatch)
+        if (isNoesisExport):
+            mesh.name = "submesh{}".format(meshNumberMatch)
+        else:
+            mesh.name = "submesh_{}_LOD_1".format(meshNumberMatch.zfill(2)) # prefix with leading zero
+    except:
+        print("couldn't find a numeric index for {}".format(mesh.name))
     
     # adjust shapekey names
     if mesh.data.shape_keys is None: 
