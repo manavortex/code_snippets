@@ -46,7 +46,7 @@ for mesh in filter(lambda obj: obj.type == 'MESH' and re.match("^submesh_0|^subm
         meshNumberMatch = re.search('[0-9]+', mesh.name).group()
         print(meshNumberMatch)
         if (isNoesisExport):
-            mesh.name = "submesh{}".format(meshNumberMatch)
+            mesh.name = "submesh{}".format(re.sub('^0', '', str(meshNumberMatch)))
         else:
             mesh.name = "submesh_{}_LOD_1".format(meshNumberMatch.zfill(2)) # prefix with leading zero
     except:
