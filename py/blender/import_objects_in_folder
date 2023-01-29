@@ -1,0 +1,21 @@
+import os
+import bpy
+import re
+
+
+filepath = bpy.data.filepath
+directory = os.path.dirname(filepath)
+targetPath = ''
+        
+
+for root, dirs, files in os.walk(directory):
+    for file in files: # loops through directories and files
+        print("file = ", file)
+        if file.endswith('.glb'): # compares to specified condition            
+            pot2 = os.path.join(root,file)
+            print("Pot2 = ", pot2)
+            imported_object = bpy.ops.import_scene.gltf(filepath=pot2)
+            print("imported_object = ", imported_object)
+            selectedObject = bpy.context.scene.objects.get("Armature")
+            selectedObject.name = re.sub('\.glb', '', file)
+        
