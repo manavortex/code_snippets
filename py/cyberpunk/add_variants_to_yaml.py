@@ -4,11 +4,9 @@ import collections
 import yaml
 import re
   
-variants = ['variant_1', 'variant_2']
+variants = ['black_gold', 'black_leather', 'black_red', 'black_silver', 'carbon_fiber', 'glass_fiber', 'glitch_latex', 'hex_black', 'hex_glass', 'hex_glitch', 'hex_gold_black', 'hex_redblack', 'hex_silver_black', 'hex_white_black', 'hex_white_gold', 'hex_white_matteblack', 'plain_glass', 'white_black', 'white_rubber']
 
-# Run in same folder as a yaml file with one entry. VARIANT will be substituted for variant name in values and in top level key.
-# ATTENTION: Doesn't work for nested arrays. Use flat arrays with key: \n  - item
-
+# Folder Path
 path = os.path.dirname(__file__)
 
 def replace_in_dict(dict, source, target, slotNumber): 
@@ -57,10 +55,8 @@ for file in os.listdir():
                 idx += 1
 
                 text_content[_key] = _value
-            
-            print(yaml.dump(text_content))
 
             del text_content[key]
 
-            with open("test.yml", "w") as yaml_file:
+            with open("_output.yml", "w") as yaml_file:
                yaml.dump(text_content, yaml_file)
