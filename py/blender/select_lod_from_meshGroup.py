@@ -13,7 +13,6 @@ for mesh in filter(lambda obj: obj.type == 'MESH', bpy.data.objects):
         meshes[groupName] = []
     meshes[groupName].append(mesh.name)
 
-
 for key in meshes:
     submeshes = []
     meshNames = meshes[key]
@@ -27,25 +26,26 @@ for key in meshes:
 selectedNames = []
 deleteNames = []    
 
-for key in meshes:
+for key in meshes:    
+    # if we have just one mesh in the group, don't delete it
+    if len(meshes[key]) == 1:
+        continue
+    
     i = 0
     for submesh in meshes[key]:
         numVertices = len(submesh.data.vertices)
-        groupName = re.sub('\.\d+$', '', mesh.name)        
+        groupName = re.sub('\.\d+$', '', submesh.name)
         
         # either the index matches
-        shouldSelect = i == index 
+        shouldSelect = i == index
         
-        # if the index matches, but the vertex count is too high, don't keep it
+        # if the vertex count is too high, don't keep it
         shouldSelect = shouldSelect and (vertexThreshold == 0 or numVertices <= vertexThreshold)
                         
         if (not shouldSelect and i > index and vertexThreshold > 0):
-            shouldSelect = any(s.startswith(groupName) for s in selectedNames)
-            
-        # if there's only one submesh, don't delete
-        shouldSelect = shouldSelect or len(meshes[key]) === 1   
+            shouldSelect = not any(s == groupName or s.startswith("{}.".format(groupName)) for s in selectedNames)
         
-        (selectedNames if (shouldSelect or justOneMesh) else deleteNames).append(submesh.name)
+        (selectedNames if shouldSelect else deleteNames).append(submesh.name)
         
         i += 1
 
@@ -54,4 +54,4 @@ print("Deleting all but {}".format(selectedNames))
 bpy.ops.object.select_all(action='DESELECT')
 for deleteName in deleteNames:
     bpy.data.objects[deleteName].select_set(True)
-    bpy.ops.object.delete()
+    # bpy.ops.object.delete()
