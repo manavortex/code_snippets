@@ -54,4 +54,4 @@ print("Deleting all but {}".format(selectedNames))
 bpy.ops.object.select_all(action='DESELECT')
 for deleteName in deleteNames:
     bpy.data.objects[deleteName].select_set(True)
-    # bpy.ops.object.delete()
+    bpy.ops.object.delete()
