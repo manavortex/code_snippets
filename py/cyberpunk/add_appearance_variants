@@ -1,0 +1,58 @@
+import json
+import os
+import re
+import copy
+
+entpath = "E:\\path\\to\\app\\appearance.app.json"
+
+path =  os.path.dirname(entpath)
+appearanceNames=['var1', 'var2', 'var3']
+
+
+with open(entpath,'r') as f: 
+    j=json.load(f)
+   
+
+t=j['Data']['RootChunk']
+appearances=t['appearances']
+i = 0
+for _app in appearances:    
+    if (not "VARIANT" in _app['Data']['name']):
+        _app['HandleId'] = str(i)
+        _app['Data']['compiledData']["BufferId"] = str(i)
+        i += 1
+        continue
+    original =  copy.deepcopy(_app)
+    for appearanceName in appearanceNames:
+        app =  copy.deepcopy(original)
+        app['HandleId'] = str(i)
+        app['Data']['compiledData']["BufferId"] = str(i)
+
+        app['Data']['name'] = re.sub("VARIANT", appearanceName, app['Data']['name'])
+
+        overrides = []
+        for override in app['Data']['partsOverrides']:
+            compOverrides = []
+            for compOverride in override['componentsOverrides']:                
+                compOverride['meshAppearance'] = appearanceName
+                compOverrides.append(compOverride)
+            override['componentsOverrides'] = compOverrides
+            overrides.append(override)
+
+        app['Data']['partsOverrides'] = overrides
+
+        t['appearances'].append(app)
+        i += 1
+
+
+print("\n\n\n")
+print("\n\n\n")
+filename = os.path.basename(entpath)[:-9]
+path = re.sub("{}.app.json".format(filename), '', entpath)
+
+outname= "{}_edited.app.json".format(filename)
+
+pathout=os.path.join(path,outname )
+
+with open(pathout, 'w') as outfile:
+    json.dump(j, outfile,indent=2)
