@@ -1,89 +1,95 @@
 import json
 import os
-import re
 import copy
+import shutil
 
-# precondition: have appearances set up for the number of variants that you want.
-# the script will rename them and fix up the indices, it can't create them yet.
+path = "E:\\path\\to\\your\\mesh\\your_mesh.mesh.json"
 
-entpath = "E:\\path_to_mesh\\my.mesh.json"
+appearanceNames = ['black', 'white', 'neon_blue', 'neon_green']
 
-path =  os.path.dirname(entpath)
-appearanceNames=['variant_1', 'variant_2']
 
-with open(entpath,'r') as f: 
-    j=json.load(f)
+replaceme="VARIANT"
+
+
+t=None
+appearances=None
+materials=None
+matEntries = None
+
+
+def processMaterial(appearanceName, mat):
+    for value in mat['values']:
+        if "MultilayerSetup" in value and 'DepotPath' in value['MultilayerSetup']:
+            value['MultilayerSetup']['DepotPath']=value['MultilayerSetup']['DepotPath'].replace(replaceme, appearanceName)
+        if "MultilayerMask" in value and 'DepotPath' in value['MultilayerMask']:
+            value['MultilayerMask']['DepotPath']=value['MultilayerMask']['DepotPath'].replace(replaceme, appearanceName)
+        if "GlobalNormal" in value and 'DepotPath' in value['GlobalNormal']:
+            value['GlobalNormal']['DepotPath']=value['GlobalNormal']['DepotPath'].replace(replaceme, appearanceName)
+        if "BaseColor" in value and 'DepotPath' in value['BaseColor']:
+            value['BaseColor']['DepotPath']=value['BaseColor']['DepotPath'].replace(replaceme, appearanceName)
+        if "Normal" in value and 'DepotPath' in value['Normal']:
+            value['Normal']['DepotPath']=value['Normal']['DepotPath'].replace(replaceme, appearanceName)
+    return mat
+
+
+def addAppearance(appearanceName):
+    appearances.append(copy.deepcopy(t['appearances'][0]))
+    app=appearances[len(appearances)-1]
+    app['Data']['name']=app['Data']['name'].replace('__variant', appearanceName)
+    if app['Data']['name']=="default":
+        app['Data']['name'] = appearanceName
+    app['HandleId']=str(len(appearances)-1)
+    a=0
+    while a < len(app['Data']['chunkMaterials']):
+        app['Data']['chunkMaterials'][a]=app['Data']['chunkMaterials'][a].replace(replaceme, appearanceName)
+        a+=1
+    a=0
+    while a < len(app['Data']['tags']):
+        app['Data']['tags'][a]=app['Data']['tags'][a].replace(replaceme, appearanceName)
+        a+=1
+
+    t['renderResourceBlob']['HandleId']=str(len(appearances))
    
+def addMaterialName(appearanceName):
+    matEntries.append(copy.deepcopy(matEntries[0]))
+    matEnt=matEntries[len(matEntries)-1]
+    matEnt['name']=matEnt['name'].replace(replaceme, appearanceName)
+    matEnt['index']=len(matEntries)-1
 
-t=j['Data']['RootChunk']
-appearances=t['appearances']
+def addMaterial(appearanceName):
+    materials.append(copy.deepcopy(materials[0]))
+    mat=materials[len(materials)-1]
+    processMaterial(appearanceName, mat)
+    
+if not os.path.isfile("{}.orig".format(path)):
+    shutil.copy(path, "{}.orig".format(path))
+else:
+    os.remove(path) 
+    shutil.copy("{}.orig".format(path), path)
 
-def cleanupValue(value):
-    if "MultilayerSetup" in value and 'DepotPath' in value['MultilayerSetup']:
-        value['MultilayerSetup']['DepotPath'] = re.sub("VARIANT", appearanceName, value['MultilayerSetup']['DepotPath'])
-    if "MultilayerMask" in value and 'DepotPath' in value['MultilayerMask']:
-        value['MultilayerMask']['DepotPath'] = re.sub("VARIANT", appearanceName, value['MultilayerMask']['DepotPath'])
-    if "GlobalNormal" in value and 'DepotPath' in value['GlobalNormal']:
-        value['GlobalNormal']['DepotPath'] = re.sub("VARIANT", appearanceName, value['GlobalNormal']['DepotPath'])
-    if "BaseColor" in value and 'DepotPath' in value['BaseColor']:
-        value['BaseColor']['DepotPath'] = re.sub("VARIANT", appearanceName, value['BaseColor']['DepotPath'])
-    if "Normal" in value and 'DepotPath' in value['Normal']:
-        value['Normal']['DepotPath'] = re.sub("VARIANT", appearanceName, value['Normal']['DepotPath'])
-    return value
+with open(path,'r') as f: 
+    j=json.load(f)
 
-i = 0
+    t=j['Data']['RootChunk']
+    appearances=t['appearances']
+    materials=t['localMaterialBuffer']['materials']
+    matEntries = t['materialEntries']
 
-for appearanceName in appearanceNames:
-    try:
-        app = appearances[i]
-        app['Data']['name'] = re.sub("VARIANT", appearanceName, app['Data']['name'])
+    for appearanceName in appearanceNames:
+        addAppearance(appearanceName)
+        addMaterialName(appearanceName)
+        addMaterial(appearanceName)
+             
+'''
+  
+ 
+    for override in app['Data']['partsOverrides']:
+        for compOverride in override['componentsOverrides']:
+            compOverride['meshAppearance'] = appearanceName
 
-        chunkMaterials = []
-        for chunkMaterial in app['Data']['chunkMaterials']:
-            chunkMaterials.append(re.sub("VARIANT",appearanceName, chunkMaterial))
-
-        app['Data']['chunkMaterials'] = chunkMaterials
-    except:
-        print("failed to process appearance {} ({})".format(i, appearanceName))
-
-    localMaterials = t['localMaterialBuffer']['materials']
-    refMaterial = localMaterials[0]
-
-    try:
-        _localMaterial = localMaterials[i]        
-        values = []
-
-        for value in (_localMaterial['values'] if len(_localMaterial['values']) > 0 else refMaterial['values']):
-           values.append(cleanupValue(value))
-
-        _localMaterial['values'] = values
-    except:
-        print("failed to process material {} ({})".format(i, appearanceName))
+'''
 
 
-    try:
-        materialEntries = t['materialEntries']
-        refMaterial = materialEntries[i]
 
-        materialName = re.sub("VARIANT", appearanceName, refMaterial["name"])
-        refMaterial['index'] = i
-        refMaterial['name'] = materialName    
-    except:        
-        print("failed to process materialEntry {} ({})".format(i, appearanceName))
-
-    i += 1    
-
-
-print("\n\n\n")
-print("\n\n\n")
-filename = entpath.split("\\")[-1]
-
-print(filename)
-path = re.sub(filename, '', entpath)
-
-outname= "{}_edited.mesh.json".format(re.sub('.mesh.json', '', filename))
-
-pathout=os.path.join(path,outname )
-
-with open(pathout, 'w') as outfile:
+with open(path, 'w') as outfile:
     json.dump(j, outfile,indent=2)
