@@ -86,7 +86,7 @@ with open(path, 'r') as stream:
                
 
 # tidy up borked yaml tags. PYTHON WHY
-with open("_output.yml", 'r') as file :
+with open(path, 'r') as file :
     filedata = file.read()
 
     # Replace the target string
@@ -94,6 +94,6 @@ with open("_output.yml", 'r') as file :
     filedata = filedata.replace(" append!'", '')
 
     # Write the file out again
-    with open('file.yml', 'w') as file:
+    with open(path, 'w') as file:
         file.write(filedata)
             
