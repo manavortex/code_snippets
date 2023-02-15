@@ -5,10 +5,10 @@ import yaml
 import re
 import shutil
   
-variants = ['black_gold', 'black_silver']
+variants=["white", "black", "red", "pink", "navy", "green"]
 
 # Folder Path
-path = "E:\\path\\to\\your.yaml"
+path = "E:\\path_to\\your.yaml"
 
 replaceme = "VARIANT"
 ################################################### DO NOT EDIT BELOW THIS LINE ########################################################
@@ -23,8 +23,11 @@ else:
 
 def append_constructor(loader: yaml.SafeLoader, node: yaml.nodes.ScalarNode) -> str:
   return f"!append {loader.construct_scalar(node)} append!"
+def append_once_constructor(loader: yaml.SafeLoader, node: yaml.nodes.ScalarNode) -> str:
+  return f"!append-once {loader.construct_scalar(node)} append-once!"
 
 yaml.SafeLoader.add_constructor("!append", append_constructor)
+yaml.SafeLoader.add_constructor("!append-once", append_once_constructor)
 
 def replace_in_dict(dict, source, target, currentSlotIdx): 
     ret = dict.copy()
@@ -81,7 +84,7 @@ with open(path, 'r') as stream:
             text_content[key] = value
 
 
-    with open("_output.yml", "w") as yaml_file:                    
+    with open(path, "w") as yaml_file:                    
         yaml.dump(text_content, yaml_file)
                
 
@@ -91,7 +94,9 @@ with open(path, 'r') as file :
 
     # Replace the target string
     filedata = filedata.replace("- '!append", '  - !append')
+    filedata = filedata.replace("- '!append-once", '  - !append-once')
     filedata = filedata.replace(" append!'", '')
+    filedata = filedata.replace(" append-once!'", '')
 
     # Write the file out again
     with open(path, 'w') as file:
