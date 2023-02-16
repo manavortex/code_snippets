@@ -4,9 +4,9 @@ import re
 import copy
 import shutil
 
-path = "E:\\path\\to\\appearance.app.json"
+path = "F:\\path\\to\\your.app.json"
 
-appearanceNames=['black_gold', 'black_silver']
+appearanceNames=["white", "black", "red", "pink", "navy", "green"]
 
 replaceme="VARIANT"
 
@@ -20,11 +20,10 @@ else:
 with open(path,'r') as f: 
     j=json.load(f)
    
-
 t=j['Data']['RootChunk']
 appearances=t['appearances']
 i = 0
-for _app in appearances:    
+for _app in appearances:
     if (not replaceme in _app['Data']['name']):
         _app['HandleId'] = str(i)
         _app['Data']['compiledData']["BufferId"] = str(i)
@@ -42,7 +41,10 @@ for _app in appearances:
         for override in app['Data']['partsOverrides']:
             compOverrides = []
             for compOverride in override['componentsOverrides']:                
-                compOverride['meshAppearance'] = appearanceName
+                if not replaceme in compOverride['meshAppearance']: 
+                    compOverride['meshAppearance'] = appearanceName
+                else: 
+                    compOverride['meshAppearance'] = compOverride['meshAppearance'].replace(replaceme, appearanceName)
                 compOverrides.append(compOverride)
             override['componentsOverrides'] = compOverrides
             overrides.append(override)
@@ -56,3 +58,24 @@ for _app in appearances:
 
 with open(path, 'w') as outfile:
     json.dump(j, outfile,indent=2)
+
+with open(path,'r') as f: 
+    lines=f.readlines()
+
+i=0
+j=0
+for x,line in enumerate(lines):
+    if 'HandleId' in line:
+        lines[x]=line[:line.find('"HandleId": "')+len('"HandleId": "')]+str(i)+line[-3:]
+        i+=1
+    if 'BufferId' in line:
+        eol=-3
+        if line[eol]!='"':
+            eol=-2
+        lines[x]=line[:line.find('"BufferId": "')+len('"BufferId": "')]+str(j)+line[eol:]
+        j+=1
+
+
+with open(path, 'w') as outfile:
+    outfile.writelines(lines)
+
