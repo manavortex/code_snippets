@@ -4,7 +4,7 @@ import re
 import copy
 import shutil
 
-path = "F:\\path\\to\\your.app.json"
+path = "e:\\path_to\\your.app.json"
 
 appearanceNames=["white", "black", "red", "pink", "navy", "green"]
 
@@ -20,6 +20,7 @@ else:
 with open(path,'r') as f: 
     j=json.load(f)
    
+
 t=j['Data']['RootChunk']
 appearances=t['appearances']
 i = 0
