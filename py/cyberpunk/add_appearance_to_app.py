@@ -11,8 +11,8 @@ appearanceNames=["white", "black", "red", "pink", "navy", "green"]
 # appearances to duplicate
 baselist=['ff_shirt','ff_pants','ff_belt']
 
-# components to ignore
-blacklist=['belt_buckle_component']
+# mesh appearances (of components) to ignore
+blacklist=['belt_buckle_metal']
 
 if not os.path.isfile("{}.orig".format(path)):
     shutil.copy(path, "{}.orig".format(path))
