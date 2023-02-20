@@ -24,8 +24,8 @@ filetypes = (
         ('json files', '*.ent.json'),
         ('All files', '*.*')
     )
-path = fd.askopenfilename(initialdir='F:\\CPMod\\Vesna\\source\\raw\\base\\characters\\garment\\e3_content',        filetypes=filetypes)
-#path = "F:\\CPMod\\Vesna\\source\\raw\\base\\characters\\garment\\e3_content\\pma_male_shaped.mesh.json"
+
+path = fd.askopenfilename(initialdir='E:\\path\\to\\your\\folder',        filetypes=filetypes)
 
 
 appearanceNames = ['black', 'white', 'blue', 'green', "yellow", "red", "pink", "purple", "brown"]
