@@ -28,11 +28,11 @@ def renameMeshes():
         
 def rotateArmatures():  
   for armature in filter(lambda obj: obj.type == 'ARMATURE', bpy.data.objects):
-      if not armature.is_visible:
+      if not armature.visible_get():
           continue;
       # to change the name, simply do "armature.name = xyz"
       rotation = armature.rotation_quaternion
-      if (isNoesisExport):
+      if (isNoesis):
           armature.rotation_quaternion.w = 0.0
           armature.rotation_quaternion.z = -1.0
       else:
