@@ -24,3 +24,4 @@ for name in meshNames:
     obj = bpy.data.objects[name]
     if 'Armature' in obj.modifiers:         
         obj.modifiers['Armature'].object=target
+        obj.modifiers['Armature'].use_bone_envelopes=True
