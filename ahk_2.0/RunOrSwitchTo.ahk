@@ -1,12 +1,17 @@
-RunOrSwitchTo(Target, WinTitle := "", Args := "")
-{
-	; Get the filename without a path
-	SplitPath(Target, &TargetNameOnly)
+
+LaunchProgramIfNotRunning(Target, WinTitle, Args)
+{	
+	if (WinExist(WinTitle))
+		return
 	
-	; Process returns the PID of a matching process exists, or 0 otherwise
-	ErrorLevel := ProcessExist(TargetNameOnly)
+	; Process returns the PID of a matching process exists, or 0 otherwise	
+	ErrorLevel := WinWait(WinTitle, , 3)
+	
+	MsgBox(ErrorLevel)
 	
     OutputDebug("[" A_ScriptName "] RunOrSwitchTo: " Target ", " WinTitle)
+	
+	ClassID := ''
 	
 	; Get the PID and the class if the process is already running
 	if (ErrorLevel > 0)
@@ -16,59 +21,56 @@ RunOrSwitchTo(Target, WinTitle := "", Args := "")
 	}
 	; Run the program if the process is not already running
 	Else
-  {
-	if (Args = "") 
-  {
-		RunWait("`"" Target "`"", , , &PID)
-  }
-	else 
-  {
-		RunWait("`"" Target "`" `"" Args "`"", , , &PID)
-  }
-  }  
-	
-	; At least one app  wouldn't always become the active window after using Run, so we always force a window activate.
-	; Activate by title if given, otherwise use class ID. Activating by class ID appears more robust for switching than using PID.
-	if (WinTitle != "")
 	{
-		SetTitleMatchMode(2)
-		ErrorLevel := WinWait(WinTitle, , 3) , ErrorLevel := ErrorLevel = 0 ? 1 : 0
-		
-		if WinActive(WinTitle)
+		if (Args = "") 
 		{
-			WinActivateBottom(WinTitle)
+			RunWait("`"" Target "`"", , , &PID)
 		}
-		Else
+		else 
 		{
-			WinActivate(WinTitle)
-		}	
-		MMX := WinGetMinMax(WinTitle)
-		if (MMX = -1)
-			WinMaximize(WinTitle)
+			RunWait("`"" Target "`" `"" Args "`"", , , &PID)
+		}
+	}	
+	
+	Return PID	
+}
+
+
+RunOrSwitchTo(Target, WinTitle := "", Args := "")
+{	
+	; Get the filename without a path
+	SplitPath(Target, &TargetNameOnly)
+	
+	if (WinTitle == "")
+	{	
+		WinTitle := TargetNameOnly
+	}
+	
+	ClassID := LaunchProgramIfNotRunning(Target, WinTitle, Args)
+
+	; Activate by title if it exists 
+	SetTitleMatchMode(2)	
+	if (WinActive(WinTitle))
+	{
+		WinActivateBottom(WinTitle)
 	}
 	Else
 	{
-		ErrorLevel := WinWait("ahk_class " ClassID, , 3) , ErrorLevel := ErrorLevel = 0 ? 1 : 0
-		if WinActive("ahk_class " ClassID)
-		{
-			WinActivateBottom("ahk_class " ClassID)
-		}
-		Else
-		{
-			WinActivate("ahk_class " ClassID)
-		}
-			
-		MMX := WinGetMinMax(%ClassID%())
-		if (MMX = -1)
-			WinMaximize("ahk_class " ClassID)
-	}
-
-	WinState := WinGetMinMax("A")
+		WinActivate(WinTitle)
+	}	
+	
+	
 	if WinActive("ahk_exe Console.exe")
-			return
+	return
+	if WinActive("ahk_exe ConEmu64.exe")
+	return
+	
+	; maximize window
+	WinState := WinGetMinMax("A")
+	
     if ( WinState = 0) {
-			WinMaximize("A")
-			return
-		}
+		WinMaximize("A")
+		return
+	}
     ; WinRestore, A   
 }
