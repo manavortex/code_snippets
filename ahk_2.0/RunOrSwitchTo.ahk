@@ -1,13 +1,15 @@
 
+GroupAdd("DontMaximizeMe", "ahk_exe Console.exe")
+GroupAdd("DontMaximizeMe", "ahk_exe ConEmu64.exe")
+GroupAdd("DontMaximizeMe", "ahk_exe chrome.exe")
+
 LaunchProgramIfNotRunning(Target, WinTitle, Args)
 {	
 	if (WinExist(WinTitle))
-		return
+	return
 	
 	; Process returns the PID of a matching process exists, or 0 otherwise	
-	ErrorLevel := WinWait(WinTitle, , 3)
-	
-	MsgBox(ErrorLevel)
+	ErrorLevel := WinWait(WinTitle, , 3)	
 	
     OutputDebug("[" A_ScriptName "] RunOrSwitchTo: " Target ", " WinTitle)
 	
@@ -31,7 +33,6 @@ LaunchProgramIfNotRunning(Target, WinTitle, Args)
 			RunWait("`"" Target "`" `"" Args "`"", , , &PID)
 		}
 	}	
-	
 	Return PID	
 }
 
@@ -43,11 +44,11 @@ RunOrSwitchTo(Target, WinTitle := "", Args := "")
 	
 	if (WinTitle == "")
 	{	
-		WinTitle := TargetNameOnly
+		WinTitle := "ahk_exe " TargetNameOnly
 	}
 	
 	ClassID := LaunchProgramIfNotRunning(Target, WinTitle, Args)
-
+	
 	; Activate by title if it exists 
 	SetTitleMatchMode(2)	
 	if (WinActive(WinTitle))
@@ -56,19 +57,21 @@ RunOrSwitchTo(Target, WinTitle := "", Args := "")
 	}
 	Else
 	{
-		WinActivate(WinTitle)
+		; Window isn't active. Let's wait for 5 seconds, maybe the app was launching
+		Try {
+			WinWait(WinTitle, , 5000)
+			WinActivate(WinTitle)
+		}
 	}	
 	
 	
-	if WinActive("ahk_exe Console.exe")
-	return
-	if WinActive("ahk_exe ConEmu64.exe")
+	if WinActive("ahk_group DontMaximizeMe")
 	return
 	
 	; maximize window
 	WinState := WinGetMinMax("A")
 	
-    if ( WinState = 0) {
+	if ( WinState = 0) {
 		WinMaximize("A")
 		return
 	}
