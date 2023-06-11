@@ -33,6 +33,6 @@ for obj in bpy.context.selected_objects:
         print("Deleting them for you...")
         bpy.ops.mesh.delete(type='VERT')    
     else:
-        print("Deleting them for you...")
+        print("Vetices without groups are:")
         print(vertices)
         break
