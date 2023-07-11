@@ -1,9 +1,7 @@
 import bpy
 
-# If you set this to "False", the script will stop as soon as it finds vertices without groups
-# and select them for you in edit mode. 
-# I don't know why you would want that, but there you go.
-AUTO_DELETE = True
+# If you set this to "True", the script will DELETE vertices without groups. Otherwise, it'll select them for you in edit mode. 
+AUTO_DELETE = False
 
 ############################################### change below this line at own risk ###############################################
 
