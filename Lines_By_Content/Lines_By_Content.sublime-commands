@@ -1,0 +1,10 @@
+[
+    {
+        "caption": "Remove Lines With Partial",
+        "command": "remove_lines_with_partial"
+    },
+    {
+        "caption": "Remove Lines Without Partial",
+        "command": "remove_lines_without_partial"
+    }
+]
