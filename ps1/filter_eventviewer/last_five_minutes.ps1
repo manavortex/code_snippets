@@ -21,12 +21,16 @@ $events | Format-Table -AutoSize -Wrap
 
 
 # ################################################################################################
-# all logs
+# all logs but powershell
 # ################################################################################################
 
 $events = @()
 $logs = Get-WinEvent -ListLog * -ErrorAction SilentlyContinue | 
-    Where-Object {$_.RecordCount -gt 0 -and $_.IsEnabled}
+    Where-Object {
+        $_.RecordCount -gt 0 -and $_.IsEnabled -and 
+        $_.LogName -notlike "*PowerShell*" -and
+        $_.LogName -notlike "*Windows PowerShell*"
+      }
 
 foreach ($log in $logs) {
     try {
