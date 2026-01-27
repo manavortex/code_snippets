@@ -1,18 +1,32 @@
+$exe = "$env:ProgramFiles\PuTTY\plink.exe";  
+function CheckForPlinkExe() {
+	Write-Host "Checking for plink.exe..."
+	if ([System.IO.File]::Exists($exe)) {
+		Write-Host "Found plink.exe at $exe"
+		return
+	}
+	
+	try {
+		# Get-Command looks for executables in the system's PATH.
+		$exe = (Get-Command plink.exe -ErrorAction Stop).Source
+		Write-Host "plink.exe found at: $exe"
+	}
+	catch {
+		throw "Custom Error: plink.exe not found in default location $env:ProgramFiles\PuTTY\plink.exe or in your PATH. Please install PuTTY (which includes plink.exe)."
+	}
+}
+
 function Invoke-Plink {
     
     <#
-        Based on https://schneegans.de/windows/pwsh-invoke-plink/ - this one takes username, password, and hostname
-        
         .SYNOPSIS
-            Executes a remote command via Plink.
-    
-        .PARAMETER username
+            Executes a remote command via Plink for use within an automated pipeline.
             The username
     
         .PARAMETER password
             The password
 			
-        .PARAMETER host
+        .PARAMETER hostname
             Host to connect to (IP or hostname) for ssh -v
             
         .PARAMETER Command
@@ -38,13 +52,12 @@ function Invoke-Plink {
         
         [Parameter( Mandatory )]
         [string]
-        $host,
-        
+        $hostname,
+		        
         [AllowEmptyString()]
-        [Parameter]
+        [Parameter()]
         [string[]]
-        $Command,
-
+        $Command,		
         
         [Parameter()]
         [ValidateSet( 'Throw', 'Merge', 'Discard', 'Split' )]
@@ -52,22 +65,33 @@ function Invoke-Plink {
         $StandardErrorBehavior = 'Throw'
     );
 
-    [string] $Command = $Command # | Join-String -Separator "`n";
-    $exe = "$env:ProgramFiles\PuTTY\plink.exe";
-  
+    # [string] $Command = $Command | Join-String -Separator "`n";
+	CheckForPlinkExe
     
     $OutputFile = [System.IO.Path]::GetTempFileName();
     $ErrorFile = [System.IO.Path]::GetTempFileName();
-    
+
+	# optional: to disable strict host checking, remove the next two comments
+	# $hostKey=(Write-Output "i`n" | plink -shh -batch -v $hostname -l $username -pw $password) 2>&1 | select-string -Pattern 'ssh-rsa \d+ (.+)' | % {($_ -split " ")[2] }
+		
+	$params = @(
+		"-ssh",
+		"-batch",
+		"-v", "$hostname",
+		"-l", "$username",
+		"-pw", "$password"
+		# ,"-hostkey", "$hostkey"		
+	) 	
+	
     try {
         switch( $StandardErrorBehavior ) {
             'Throw' {
-                $null | & $exe -ssh $username@$host -pw $password "$Command" 1>$OutputFile 2>$ErrorFile;
+                $null | & $exe @params 1>$OutputFile 2>$ErrorFile;
                 $ErrorContent = Get-Content -LiteralPath $ErrorFile;
                 if( $ErrorContent ) {
                     throw $ErrorContent;
                 } else {
-                    Get-Content -LiteralPath $OutputFile;
+                    Get-Content -LieralPath $OutputFile;
                 }
             }
             'Merge' {
